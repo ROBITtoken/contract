@@ -1,11 +1,8 @@
 /**
- *Submitted for verification at BscScan.com on 2021-06-14
-*/
-
-/**
    
-FUCK YOU BEZOS! PAY YOUR FUCKING TAXES!
-
+ROBIT TOKEN SMART CONTRACT
+Website : https://robit.website
+Telegram : http://t.me/ROBITGroup
 */
 
 pragma solidity ^0.6.12;
