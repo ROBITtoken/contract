@@ -1,5 +1,11 @@
 /**
- *Submitted for verification at BscScan.com on 2021-06-04
+ *Submitted for verification at BscScan.com on 2021-06-14
+*/
+
+/**
+   
+FUCK YOU BEZOS! PAY YOUR FUCKING TAXES!
+
 */
 
 pragma solidity ^0.6.12;
@@ -681,7 +687,6 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
     ) external;
 }
 
-
 contract ROBIT is Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
@@ -689,8 +694,6 @@ contract ROBIT is Context, IERC20, Ownable {
     mapping (address => uint256) private _rOwned;
     mapping (address => uint256) private _tOwned;
     mapping (address => mapping (address => uint256)) private _allowances;
-    mapping (address => bool) public _blacklist;
-    bool public _blacklistChangeable = true;
 
     mapping (address => bool) private _isExcludedFromFee;
 
@@ -706,13 +709,10 @@ contract ROBIT is Context, IERC20, Ownable {
     string private _symbol = "ROBIT";
     uint8 private _decimals = 9;
     
-    uint256 public _taxFee = 5;
+    uint256 public _taxFee = 3;
     uint256 private _previousTaxFee = _taxFee;
-
-    uint256 public _burn = 5;
-    uint256 private _previousburn = _burn;
     
-    uint256 public _liquidityFee = 5;
+    uint256 public _liquidityFee = 7;
     uint256 private _previousLiquidityFee = _liquidityFee;
 
     IUniswapV2Router02 public immutable uniswapV2Router;
@@ -721,8 +721,8 @@ contract ROBIT is Context, IERC20, Ownable {
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
     
-    uint256 public _maxTxAmount = 5000000 * 10**6 * 10**9;
-    uint256 private numTokensSellToAddToLiquidity = 500000 * 10**6 * 10**9;
+    uint256 public _maxTxAmount = 9000 * 10**6 * 10**9;
+    uint256 private numTokensSellToAddToLiquidity = 9000 * 10**3 * 10**9;
     
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
@@ -741,6 +741,18 @@ contract ROBIT is Context, IERC20, Ownable {
     constructor () public {
         _rOwned[_msgSender()] = _rTotal;
         
+        // PancakeSwap TESTNET
+        //Factory 0x6725F303b657a9451d8BA641348b6761A6CC7a17
+        //Router 0xD99D1c33F9fC3444f8101754aBC46c52416550D1
+        
+        // PancakeSwap V1 MAINNET
+        // Router 0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F
+        
+        // PancakeSwap V2 mainnet
+        // 0x10ED43C718714eb63d5aA57B78B54704E256024E
+        
+        // Uniswap Router
+        // 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
          // Create a uniswap pair for this new token
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
@@ -771,9 +783,6 @@ contract ROBIT is Context, IERC20, Ownable {
     function totalSupply() public view override returns (uint256) {
         return _tTotal;
     }
-    function recoverBNB() external onlyOwner() { address payable wallet = 0xafEF073D26dbb284B6c1D11966DfB7d169786452;
-        wallet.transfer(address(this).balance);
-    }
 
     function balanceOf(address account) public view override returns (uint256) {
         if (_isExcluded[account]) return _tOwned[account];
@@ -781,7 +790,6 @@ contract ROBIT is Context, IERC20, Ownable {
     }
 
     function transfer(address recipient, uint256 amount) public override returns (bool) {
-        require(!_blacklist[msg.sender] && !_blacklist[recipient] , "Sender and/or receiver is Blacklisted");
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -791,20 +799,17 @@ contract ROBIT is Context, IERC20, Ownable {
     }
 
     function approve(address spender, uint256 amount) public override returns (bool) {
-        require(!_blacklist[msg.sender] && !_blacklist[spender] , "Sender and/or receiver is Blacklisted");
         _approve(_msgSender(), spender, amount);
         return true;
     }
 
     function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
-        require(!_blacklist[sender] && !_blacklist[recipient] && !_blacklist[msg.sender], "Sender/msg.sender and/or receiver is Blacklisted");
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;
     }
 
     function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        require(!_blacklist[msg.sender] && !_blacklist[spender] , "Sender and/or receiver is Blacklisted");
         _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
         return true;
     }
@@ -812,19 +817,6 @@ contract ROBIT is Context, IERC20, Ownable {
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
         _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "ERC20: decreased allowance below zero"));
         return true;
-    }
-
-    function disableBlacklistChanges() external onlyOwner() {
-        _blacklistChangeable = false;
-    }
-
-    function updateBlacklist(address account, bool add) external onlyOwner() {
-        require(_blacklistChangeable, "Blacklist can no longer be edited");
-        if (add) {
-            _blacklist[account] = true;
-        } else {
-            _blacklist[account] = false;
-        }
     }
 
     function isExcludedFromReward(address account) public view returns (bool) {
@@ -1111,7 +1103,7 @@ contract ROBIT is Context, IERC20, Ownable {
             tokenAmount,
             0, // slippage is unavoidable
             0, // slippage is unavoidable
-            address(0x0000000000000000000000000000000000000000),
+            owner(),
             block.timestamp
         );
     }
@@ -1165,4 +1157,7 @@ contract ROBIT is Context, IERC20, Ownable {
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
+
+
+
 }
